@@ -4,6 +4,7 @@ import {
   loginUser,
   createUser,
   uploadPost,
+  getPost,
 } from "../controller/ct_userpost.js";
 import multer, { memoryStorage } from "multer";
 const storage = multer.memoryStorage();
@@ -21,5 +22,5 @@ router
     upload.fields([{ name: "image", maxCount: 1 }]),
     uploadPost
   );
-
+router.route("/login").post(isAuthenticatedUser, getPost);
 export default router;

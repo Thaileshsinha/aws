@@ -1,7 +1,7 @@
 import createAsyncError from "../middleware/createAsyncError.js";
 import tbl_user from "../model/tbl_user.js";
 import tbl_post from "../model/tbl_post.js";
-import { PutObject } from "../util/aws.js";
+import { PutObject, GetObject, DeleteObject } from "../util/aws.js";
 const passwordRegex =
   /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
@@ -95,4 +95,43 @@ const uploadPost = createAsyncError(async (req, res) => {
   }
 });
 
-export { createUser, loginUser, uploadPost };
+const getPost = createAsyncError(async (req, res) => {
+  try {
+    const { postId } = req.body;
+    if (!postId) {
+      return res.status(401).json({ message: "post id not get" });
+    }
+
+    const createdimgDetails = await tbl_post.findById({
+      _id: postId,
+    });
+
+    const preSignUrl = await GetObject(createdimgDetails.customName);
+    res.status(200).json({ preSignUrl });
+  } catch (err) {
+    res.status(500).json({ message: "something went wrong", err: err.message });
+  }
+});
+
+const deletePost = createAsyncError(async (req, res) => {
+  try {
+    const { postId } = req.body;
+    if (!postId) {
+      return res.status(401).json({ message: "post id not get" });
+    }
+
+    const createdimgDetails = await tbl_post.findById({
+      _id: postId,
+    });
+
+    const preSignUrl = await DeleteObject(createdimgDetails.customName);
+    const deletes = await tbl_post.findByIdAndDelete({
+      _id: postId,
+    });
+    res.status(201).json({ message: "image delete successfully" });
+  } catch (err) {
+    res.status(500).json({ message: "something went wrong", err: err.message });
+  }
+});
+
+export { createUser, loginUser, uploadPost, getPost, deletePost };
